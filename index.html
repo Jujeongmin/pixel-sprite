@@ -11,6 +11,8 @@
   · 프레임별 PNG 또는 가로로 이어 붙인 스프라이트 시트 PNG 로 내보낸다
     — 시트는 칸 크기가 모두 같으니 엔진에서 "칸 크기로 자르기" 한 번이면 된다
   · 작업은 브라우저에 자동 저장된다. 서버로는 아무것도 안 나간다
+  · PixelLab 같은 다른 도구와는 복사·붙여넣기로 오간다 (Ctrl+C / Ctrl+V).
+    크게 키운 픽셀아트를 붙여 넣으면 알아서 1배로 되돌린다
   · 처음부터 그리기 어려우면 [도안] — 미리 찍어 둔 픽셀 도안에서 시작하거나,
     도안·내 그림을 밑그림으로 깔고 따라 그린다. 사진을 픽셀로 줄여 바탕으로 쓸 수도 있다
 
@@ -41,7 +43,7 @@
   h3{margin:0 0 6px;font-size:11px;font-weight:600;color:var(--dim);letter-spacing:.5px}
 
   /* ── 위: 파일 막대 ─────────────────────────────── */
-  #bar{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:14px;
+  #bar{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px;
     padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
   #bar h1{margin:0;font-size:14px;letter-spacing:.5px}
   .grp{display:flex;align-items:center;gap:5px}
@@ -113,7 +115,11 @@
 
   /* ── 도움말·도안 창 ──────────────────────────── */
   .modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:20}
-  body.help #help, body.tpl #tpl{display:flex}
+  body.help #help, body.tpl #tpl, body.paste #paste{display:flex}
+  #pPrev{max-width:132px;max-height:132px;min-width:64px;image-rendering:pixelated;
+    background:var(--checker);background-size:12px 12px;border-radius:4px;flex:none}
+  .pBtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .pBtns button:disabled{opacity:.35}
   .box{width:min(580px,92vw);max-height:86vh;overflow-y:auto;background:var(--panel);
     border:1px solid var(--line);border-radius:12px;padding:20px 22px}
   #helpBox{user-select:text}
@@ -145,13 +151,15 @@
   </div>
   <div class="grp">
     <button id="tplBtn" class="go">도안</button>
-    <button id="openBtn">PNG 열기</button>
+    <button id="openBtn" title="PNG 파일 열기">열기</button>
+    <button id="copyBtn" title="지금 프레임을 1배 크기로 복사 (Ctrl+C) — PixelLab 등에 붙여 넣는다">복사</button>
+    <button id="pasteBtn" title="복사해 둔 그림을 붙여 넣는다 (Ctrl+V)">붙여넣기</button>
   </div>
   <div class="grp"><span>이름</span><input type="text" id="name" value="sprite" style="width:96px">
     <span>배율</span>
     <select id="scale"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select>
     <button id="expSheet" class="go">시트 저장</button>
-    <button id="expFrame">현재 프레임</button>
+    <button id="expFrame">이 프레임</button>
     <button id="expAll">프레임 전부</button>
   </div>
   <div class="grp">
@@ -264,6 +272,14 @@
         <b>픽셀로 바꾸기</b>로 지금 캔버스 크기로 줄여 바탕으로 쓴다</li>
   </ul>
 
+  <h4>PixelLab 과 같이 쓰기</h4>
+  <ul>
+    <li>PixelLab 에서 만든 그림을 복사해 여기서 <kbd>Ctrl</kbd>+<kbd>V</kbd> — 새 문서·새 프레임·지금 프레임·밑그림 중에 고른다</li>
+    <li>크게 키운 픽셀아트(4배 미리보기 등)는 알아서 1배로 되돌린다</li>
+    <li>여기서 <kbd>Ctrl</kbd>+<kbd>C</kbd> (또는 [복사]) 하면 지금 프레임이 1배 크기로 복사된다 — PixelLab 에 참고 그림으로 붙여 넣는다</li>
+    <li>흐름 예: PixelLab 으로 캐릭터·동작 생성 → 붙여 넣기 → 손보기 → 프레임 맞추기 → 시트 저장</li>
+  </ul>
+
   <h4>그리기</h4>
   <ul>
     <li><b>왼쪽 클릭</b>은 왼쪽 색, <b>오른쪽 클릭</b>은 오른쪽 색으로 그린다.
@@ -295,6 +311,7 @@
     <li><kbd>B</kbd> 연필 · <kbd>E</kbd> 지우개 · <kbd>G</kbd> 채우기 · <kbd>I</kbd> 스포이드 ·
         <kbd>L</kbd> 직선 · <kbd>R</kbd> 사각형 · <kbd>V</kbd> 옮기기</li>
     <li><kbd>M</kbd> 좌우 대칭 · <kbd>X</kbd> 두 색 바꾸기 · <kbd>Alt</kbd>+클릭 스포이드</li>
+    <li><kbd>Ctrl+C</kbd> 지금 프레임 복사 · <kbd>Ctrl+V</kbd> 그림 붙여넣기</li>
     <li><kbd>,</kbd> <kbd>.</kbd> 앞·뒤 프레임 · <kbd>Ctrl+Z</kbd> 되돌리기 · <kbd>Ctrl+Shift+Z</kbd> 다시 ·
         <kbd>Ctrl+S</kbd> 시트 저장</li>
     <li><kbd>휠</kbd> 확대 · <kbd>스페이스</kbd>+드래그 또는 <kbd>휠 클릭</kbd> 드래그 이동 · <kbd>Esc</kbd> 닫기</li>
@@ -303,6 +320,22 @@
   <p style="margin-top:16px;color:var(--dim)">작업은 이 브라우저에 자동 저장된다 — 어디로도 올라가지 않는다.
      브라우저 데이터를 지우면 같이 사라지니, 다 그린 건 시트로 저장해 둬라.</p>
   <button id="helpClose" style="margin-top:12px">닫기</button>
+</div></div>
+
+<div id="paste" class="modal"><div class="box" style="width:min(470px,92vw)">
+  <h2>붙여 넣은 그림</h2>
+  <div style="display:flex;gap:14px;align-items:center;margin:12px 0">
+    <canvas id="pPrev" width="1" height="1"></canvas>
+    <p id="pInfo" style="margin:0;line-height:1.7"></p>
+  </div>
+  <div class="pBtns">
+    <button id="pNew" class="go">새 문서로 열기</button>
+    <button id="pAdd">새 프레임으로 추가</button>
+    <button id="pFrame">지금 프레임 바꾸기</button>
+    <button id="pRef">밑그림으로 깔기</button>
+  </div>
+  <p class="dim" style="margin:10px 0 0">크기가 캔버스와 다르면 가운데에 맞춰 넣고 넘치는 곳은 자른다. 모두 되돌리기로 취소된다.</p>
+  <button id="pCancel" style="margin-top:12px">취소</button>
 </div></div>
 
 <div id="tpl" class="modal"><div class="box" id="tplBox">
@@ -649,12 +682,14 @@ $('#refAlpha').addEventListener('input', changed);
 
 const KEYS = { b: 'pencil', e: 'eraser', g: 'fill', i: 'picker', l: 'line', r: 'rect', v: 'move' };
 addEventListener('keydown', e => {
-  if (e.key === 'Escape') { document.body.classList.remove('help'); closeGallery(); return; }
+  if (e.key === 'Escape') { document.body.classList.remove('help', 'paste'); closeGallery(); return; }
   const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
   if (mod && k === 's') { e.preventDefault(); exportSheet(); return; }
   // 이름·크기 칸에 글자를 치는 중이면 단축키가 아니다
   if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.type === 'number')) return;
   if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  // 글자를 골라 둔 게 아니면 Ctrl+C 는 지금 프레임 복사. Ctrl+V 는 paste 이벤트에서 받는다
+  if (mod && k === 'c' && !String(getSelection())) { e.preventDefault(); copyFrame(); return; }
   if (mod && k === 'y') { e.preventDefault(); redo(); return; }
   if (mod) return;
   if (KEYS[k]) setTool(KEYS[k]);
@@ -881,25 +916,55 @@ function splitImage(img, n) {
   for (let i = 0; i < n; i++) list.push(new Uint32Array(x.getImageData(i * fw, 0, fw, fh).data.buffer));
   return { w: fw, h: fh, list };
 }
+/**
+ * 크게 키운 픽셀아트면 1배로 되돌린다. 다른 도구에서 복사한 그림은 보기 좋게 키워져 오는 일이 많다.
+ * 큰 배수부터 k×k 칸이 모두 한 색인지 본다 — 하나라도 다르면 키운 그림이 아니다.
+ */
+function unscale(img) {
+  const w = img.width, h = img.height;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(img, 0, 0);
+  if (w * h > 4096 * 4096) return { src: c, k: 1 };
+  const d = new Uint32Array(x.getImageData(0, 0, w, h).data.buffer);
+  for (let k = 32; k >= 2; k--) {
+    if (w % k || h % k) continue;
+    let ok = true;
+    for (let y = 0; y < h && ok; y++) {
+      const row = y * w, top = (y - y % k) * w;
+      for (let xx = 0; xx < w; xx++) if (d[row + xx] !== d[top + xx - xx % k]) { ok = false; break; }
+    }
+    if (!ok) continue;
+    const sw = w / k, sh = h / k, out = new Uint32Array(sw * sh);
+    for (let y = 0; y < sh; y++) for (let xx = 0; xx < sw; xx++) out[y * sw + xx] = d[y * k * w + xx * k];
+    return { src: toCanvas(out, sw, sh), k };
+  }
+  return { src: c, k: 1 };
+}
 async function openImage(file) {
   let bmp;
   try { bmp = await createImageBitmap(file); }
   catch { return msg('그림을 못 읽었다 — PNG 인지 확인해라', 'err'); }
-  const { width: w, height: h } = bmp;
+  const u = unscale(bmp);
+  bmp.close?.();
+  openCanvas(u.src, file.name.replace(/\.[^.]+$/, '').replace(/_\d+x\d+_\d+f$/, ''), u.k);
+}
+/** 그림 한 장을 새 문서로 연다. 가로로 긴 그림은 시트로 보고 나눌지 묻는다 */
+function openCanvas(src, name, k = 1) {
+  const w = src.width, h = src.height;
   let n = 1;
   if (w > h && w % h === 0 && h <= 256) {
     if (confirm(`가로로 긴 그림이다 (${w}×${h}).\n${h}×${h} 칸 ${w / h}프레임짜리 스프라이트 시트로 나눌까?\n\n[취소] 를 누르면 한 장으로 연다.`)) n = w / h;
   }
   if (w / n > 256 || h > 256) {
-    bmp.close?.();
-    return msg(`너무 크다 (${w}×${h}) — 한 칸이 256px 까지다. 픽셀아트를 크게 키워 저장한 거면 1배로 줄여서 열어라`, 'err');
+    return msg(`너무 크다 (${w}×${h}) — 한 칸이 256px 까지다`, 'err');
   }
   pushUndo();
-  const r = splitImage(bmp, n);
-  bmp.close?.();
+  const r = splitImage(src, n);
   setDoc(r.w, r.h, r.list);
-  $('#name').value = file.name.replace(/\.[^.]+$/, '').replace(/_\d+x\d+_\d+f$/, '');
-  msg(`${file.name} 열었다 (${r.w}×${r.h}, ${n}프레임)`, 'ok');
+  $('#name').value = name;
+  msg(`${name} 열었다 (${r.w}×${r.h}, ${n}프레임)${k > 1 ? ` — ${k}배로 키운 그림이라 1배로 줄였다` : ''}`, 'ok');
 }
 $('#openBtn').addEventListener('click', () => {
   const inp = document.createElement('input');
@@ -914,6 +979,83 @@ addEventListener('drop', e => {
   document.body.classList.remove('dragging');
   const f = e.dataTransfer?.files?.[0];
   if (f) openImage(f);
+});
+
+// ── 복사·붙여넣기 ───────────────────────────────────────
+// PixelLab 같은 다른 도구와 파일 저장 없이 오가게 한다
+async function copyFrame() {
+  const c = frameCanvas([frames[cur]], 1);
+  try {
+    // 그림을 Promise 로 넘겨야 사파리도 받아 준다 (클릭 직후에 ClipboardItem 을 만들어야 한다)
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': new Promise(r => c.toBlob(r, 'image/png')) })]);
+    msg(`지금 프레임을 복사했다 (${W}×${H}, 1배) — PixelLab 등에 붙여 넣어라`, 'ok');
+  } catch {
+    msg('이 브라우저가 그림 복사를 막았다 — [이 프레임] 으로 저장해 써라', 'err');
+  }
+}
+$('#copyBtn').addEventListener('click', copyFrame);
+
+let pasted = null;       // {src: 1배 캔버스, k: 줄인 배수}
+async function receiveImage(blob) {
+  let bmp;
+  try { bmp = await createImageBitmap(blob); }
+  catch { return msg('붙여 넣은 그림을 못 읽었다', 'err'); }
+  const u = unscale(bmp);
+  bmp.close?.();
+  pasted = u;
+  const w = u.src.width, h = u.src.height;
+  const pv2 = $('#pPrev');
+  pv2.width = w; pv2.height = h;
+  pv2.style.width = Math.min(132, Math.max(64, w * Math.max(1, Math.floor(132 / Math.max(w, h))))) + 'px';
+  pv2.getContext('2d').drawImage(u.src, 0, 0);
+  const fits = w <= 256 && h <= 256;
+  $('#pInfo').innerHTML = `<b>${w}×${h}</b>px`
+    + (u.k > 1 ? `<br><span class="dim">${u.k}배로 키운 그림이라 1배로 줄였다</span>` : '')
+    + `<br><span class="dim">지금 캔버스 ${W}×${H}</span>`
+    + (w === W && h === H ? '' : `<br><span class="dim">크기가 달라 프레임에 넣으면 가운데에 맞춘다</span>`);
+  $('#pNew').disabled = !fits && !(w > h && w % h === 0 && h <= 256);
+  document.body.classList.add('paste');
+}
+/** 붙여 넣은 그림을 지금 캔버스 크기 프레임으로 — 가운데 맞추고 넘치면 자른다 */
+function pastedFrame() {
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(pasted.src, Math.floor((W - pasted.src.width) / 2), Math.floor((H - pasted.src.height) / 2));
+  return new Uint32Array(x.getImageData(0, 0, W, H).data.buffer);
+}
+const closePaste = () => document.body.classList.remove('paste');
+$('#pNew').addEventListener('click', () => { closePaste(); openCanvas(pasted.src, $('#name').value, pasted.k); });
+$('#pAdd').addEventListener('click', () => { closePaste(); insertFrame(pastedFrame()); msg('새 프레임으로 넣었다', 'ok'); });
+$('#pFrame').addEventListener('click', () => {
+  closePaste(); pushUndo(); frames[cur] = pastedFrame(); changed(); msg('지금 프레임을 바꿨다', 'ok');
+});
+$('#pRef').addEventListener('click', () => {
+  closePaste();
+  setRef({ imgs: [pasted.src], w: pasted.src.width, h: pasted.src.height, pixel: true });
+  msg('밑그림으로 깔았다 — 위에 따라 그려라', 'ok');
+});
+$('#pCancel').addEventListener('click', closePaste);
+$('#paste').addEventListener('click', e => { if (e.target.id === 'paste') closePaste(); });
+
+// Ctrl+V — 클립보드 권한 없이도 그림을 받을 수 있다
+addEventListener('paste', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
+  const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+  if (!item) return msg('클립보드에 그림이 없다', 'err');
+  e.preventDefault();
+  receiveImage(item.getAsFile());
+});
+$('#pasteBtn').addEventListener('click', async () => {
+  try {
+    for (const it of await navigator.clipboard.read()) {
+      const type = it.types.find(t => t.startsWith('image/'));
+      if (type) return receiveImage(await it.getType(type));
+    }
+    msg('클립보드에 그림이 없다', 'err');
+  } catch {
+    msg('브라우저가 클립보드 읽기를 막았다 — Ctrl+V 를 눌러라', 'err');
+  }
 });
 
 // ── 자동 저장 ───────────────────────────────────────────

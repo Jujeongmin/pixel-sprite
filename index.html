@@ -174,14 +174,14 @@
     <div>
       <h3>도구</h3>
       <div id="tools">
-        <button data-tool="pencil" title="연필 (B)" class="on">✏️<small>B</small></button>
-        <button data-tool="eraser" title="지우개 (E)">🧽<small>E</small></button>
-        <button data-tool="fill" title="채우기 (G)">🪣<small>G</small></button>
-        <button data-tool="picker" title="스포이드 (I) — 다른 도구에서 Alt+클릭도 된다">💧<small>I</small></button>
-        <button data-tool="line" title="직선 (L)">╱<small>L</small></button>
-        <button data-tool="rect" title="사각형 (R)">▭<small>R</small></button>
-        <button data-tool="move" title="옮기기 (V) — 프레임 전체를 민다">✥<small>V</small></button>
-        <button id="clearBtn" title="이 프레임을 비운다">🗑</button>
+        <button data-tool="pencil" title="연필 (Q)" class="on">✏️<small>Q</small></button>
+        <button data-tool="eraser" title="지우개 (W)">🧽<small>W</small></button>
+        <button data-tool="fill" title="채우기 (E)">🪣<small>E</small></button>
+        <button data-tool="picker" title="스포이드 (R) — 다른 도구에서 Alt+클릭도 된다">💧<small>R</small></button>
+        <button data-tool="line" title="직선 (A)">╱<small>A</small></button>
+        <button data-tool="rect" title="사각형 (S)">▭<small>S</small></button>
+        <button data-tool="move" title="옮기기 (D) — 프레임 전체를 민다">✥<small>D</small></button>
+        <button id="clearBtn" title="이 프레임을 비운다 (F) — Ctrl+Z 로 되돌린다">🗑<small>F</small></button>
       </div>
     </div>
     <div class="opts">
@@ -251,6 +251,7 @@
 <div id="status">
   <span>위치 <b id="pos">-</b></span>
   <span>색 <b id="hover">-</b></span>
+  <span>크기 <b id="sizeV">-</b></span>
   <span>확대 <b id="zoomV">-</b></span>
   <span><kbd>휠</kbd> 확대 · <kbd>스페이스</kbd>+드래그 이동 · <kbd>,</kbd><kbd>.</kbd> 프레임 · <kbd>Ctrl+S</kbd> 시트 저장</span>
   <span id="msg"></span>
@@ -308,8 +309,8 @@
 
   <h4>단축키</h4>
   <ul>
-    <li><kbd>B</kbd> 연필 · <kbd>E</kbd> 지우개 · <kbd>G</kbd> 채우기 · <kbd>I</kbd> 스포이드 ·
-        <kbd>L</kbd> 직선 · <kbd>R</kbd> 사각형 · <kbd>V</kbd> 옮기기</li>
+    <li><kbd>Q</kbd> 연필 · <kbd>W</kbd> 지우개 · <kbd>E</kbd> 채우기 · <kbd>R</kbd> 스포이드</li>
+    <li><kbd>A</kbd> 직선 · <kbd>S</kbd> 사각형 · <kbd>D</kbd> 옮기기 · <kbd>F</kbd> 프레임 비우기 — 도구 버튼 배치와 같다</li>
     <li><kbd>M</kbd> 좌우 대칭 · <kbd>X</kbd> 두 색 바꾸기 · <kbd>Alt</kbd>+클릭 스포이드</li>
     <li><kbd>Ctrl+C</kbd> 지금 프레임 복사 · <kbd>Ctrl+V</kbd> 그림 붙여넣기</li>
     <li><kbd>,</kbd> <kbd>.</kbd> 앞·뒤 프레임 · <kbd>Ctrl+Z</kbd> 되돌리기 · <kbd>Ctrl+Shift+Z</kbd> 다시 ·
@@ -404,8 +405,9 @@ function blit(f) {
 }
 
 // ── 문서 ────────────────────────────────────────────────
-function setDoc(w, h, list, at = 0) {
-  // 크기가 바뀔 때만 화면에 맞춘다 — 되돌리기마다 확대가 풀리면 불편하다
+function setDoc(w, h, list, at = 0, keepZoom = false) {
+  // 크기가 바뀔 때만 화면에 맞춘다 — 되돌리기마다 확대가 풀리면 불편하다.
+  // keepZoom 이면 지금 확대가 화면에 들어가는 한 그대로 둔다 — 크기를 바꾼 게 눈에 보이게
   const resized = w !== W || h !== H || !frames.length;
   W = w; H = h;
   frames = list;
@@ -414,7 +416,8 @@ function setDoc(w, h, list, at = 0) {
   $('#wIn').value = W; $('#hIn').value = H;
   pvIdx = 0;
   renderFrames();
-  if (resized) fitZoom();
+  $('#sizeV').textContent = `${W}×${H}`;
+  if (resized) { if (keepZoom && zoomFits(zoom)) render(); else fitZoom(); }
   changed();
 }
 const blank = () => new Uint32Array(W * H);
@@ -440,8 +443,14 @@ $('#resizeBtn').addEventListener('click', () => {
     }
     return g;
   });
-  setDoc(w, h, list, cur);
-  msg(`${w}×${h} 로 바꿨다`, 'ok');
+  const z0 = zoom;
+  setDoc(w, h, list, cur, true);
+  msg(`${w}×${h} 로 바꿨다` + (zoom < z0 ? ` — 화면에 들어가게 확대를 ${z0}× → ${zoom}× 로 줄였다` : ''), 'ok');
+});
+// 크기 칸에서 Enter 를 누르면 바로 적용한다
+// (적용 뒤 칸에서 빠져나온다 — 그래야 바로 이어서 Ctrl+Z 같은 단축키가 먹는다)
+for (const id of ['wIn', 'hIn']) $('#' + id).addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.target.blur(); $('#resizeBtn').click(); }
 });
 const clampSize = v => Math.max(1, Math.min(256, (+v | 0) || 32));
 const hasContent = () => frames.some(f => f.some(v => v !== 0));
@@ -566,8 +575,13 @@ function fitZoom() {
   const r = stage.getBoundingClientRect();
   // 아직 자리를 못 잡았으면 다음 프레임에 다시 잰다 — 0 으로 나누면 그림이 사라진다
   if (r.width < 2 || r.height < 2) { requestAnimationFrame(fitZoom); return; }
-  zoom = Math.max(1, Math.min(64, Math.floor(Math.min(r.width - 80, r.height - 80) / Math.max(W, H))));
+  zoom = Math.max(1, Math.min(64, Math.floor(Math.min((r.width - 80) / W, (r.height - 80) / H))));
   render();
+}
+/** 이 확대로 캔버스가 화면(여백 빼고)에 다 들어가나 */
+function zoomFits(z) {
+  const r = stage.getBoundingClientRect();
+  return W * z <= r.width - 80 && H * z <= r.height - 80;
 }
 
 const ZOOMS = [1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64];
@@ -673,14 +687,17 @@ function setTool(t) {
   cv.style.cursor = t === 'move' ? 'move' : 'crosshair';
 }
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
-$('#clearBtn').addEventListener('click', () => {
+function clearFrame() {
   if (!frames[cur].some(v => v)) return;
   pushUndo(); frames[cur].fill(0); changed();
-});
+  msg('이 프레임을 비웠다 — Ctrl+Z 로 되돌린다');
+}
+$('#clearBtn').addEventListener('click', clearFrame);
 for (const id of ['mirror', 'grid', 'onion', 'refShow']) $('#' + id).addEventListener('change', changed);
 $('#refAlpha').addEventListener('input', changed);
 
-const KEYS = { b: 'pencil', e: 'eraser', g: 'fill', i: 'picker', l: 'line', r: 'rect', v: 'move' };
+// 도구 버튼 4칸×2줄 배치와 키보드 자리를 맞췄다 — 왼손을 떼지 않고 고른다
+const KEYS = { q: 'pencil', w: 'eraser', e: 'fill', r: 'picker', a: 'line', s: 'rect', d: 'move' };
 addEventListener('keydown', e => {
   if (e.key === 'Escape') { document.body.classList.remove('help', 'paste'); closeGallery(); return; }
   const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
@@ -693,6 +710,7 @@ addEventListener('keydown', e => {
   if (mod && k === 'y') { e.preventDefault(); redo(); return; }
   if (mod) return;
   if (KEYS[k]) setTool(KEYS[k]);
+  else if (k === 'f') clearFrame();
   else if (k === 'm') { $('#mirror').checked = !opt('mirror'); changed(); }
   else if (k === 'x') swapColors();
   else if (k === ',') selectFrame(cur - 1);

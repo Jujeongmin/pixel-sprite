@@ -185,7 +185,7 @@
       </div>
     </div>
     <div class="opts">
-      <label><input type="checkbox" id="mirror"> 좌우 대칭 <kbd>M</kbd></label>
+      <label><input type="checkbox" id="mirror"> 좌우 대칭 <kbd>Z</kbd></label>
       <label><input type="checkbox" id="filled"> 사각형 채우기</label>
       <label><input type="checkbox" id="grid" checked> 칸 선</label>
       <label><input type="checkbox" id="onion"> 앞 프레임 겹쳐 보기</label>
@@ -311,7 +311,7 @@
   <ul>
     <li><kbd>Q</kbd> 연필 · <kbd>W</kbd> 지우개 · <kbd>E</kbd> 채우기 · <kbd>R</kbd> 스포이드</li>
     <li><kbd>A</kbd> 직선 · <kbd>S</kbd> 사각형 · <kbd>D</kbd> 옮기기 · <kbd>F</kbd> 프레임 비우기 — 도구 버튼 배치와 같다</li>
-    <li><kbd>M</kbd> 좌우 대칭 · <kbd>X</kbd> 두 색 바꾸기 · <kbd>Alt</kbd>+클릭 스포이드</li>
+    <li><kbd>Z</kbd> 좌우 대칭 (<kbd>Ctrl</kbd>+<kbd>Z</kbd> 는 되돌리기) · <kbd>X</kbd> 두 색 바꾸기 · <kbd>Alt</kbd>+클릭 스포이드</li>
     <li><kbd>Ctrl+C</kbd> 지금 프레임 복사 · <kbd>Ctrl+V</kbd> 그림 붙여넣기</li>
     <li><kbd>,</kbd> <kbd>.</kbd> 앞·뒤 프레임 · <kbd>Ctrl+Z</kbd> 되돌리기 · <kbd>Ctrl+Shift+Z</kbd> 다시 ·
         <kbd>Ctrl+S</kbd> 시트 저장</li>
@@ -711,7 +711,7 @@ addEventListener('keydown', e => {
   if (mod) return;
   if (KEYS[k]) setTool(KEYS[k]);
   else if (k === 'f') clearFrame();
-  else if (k === 'm') { $('#mirror').checked = !opt('mirror'); changed(); }
+  else if (k === 'z') { $('#mirror').checked = !opt('mirror'); changed(); }
   else if (k === 'x') swapColors();
   else if (k === ',') selectFrame(cur - 1);
   else if (k === '.') selectFrame(cur + 1);
